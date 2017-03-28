@@ -1,0 +1,62 @@
+{
+  "name": "node-project",
+  "version": "1.0.0",
+  "description": "Node project for course",
+  "main": "index.js",
+  "author": "KBoyarchuk",
+  "license": "MIT",
+  "scripts": {
+    "start": "rimraf ./dist && babel -d ./dist ./src -s && node dist/http.js",
+    "dev": "node dev.js --inspect",
+    "lint:js": "eslint ./src",
+    "lint-staged": "lint-staged"
+  },
+  "devDependencies": {
+    "babel-register": "^6.23.0",
+    "eslint": "^3.17.0",
+    "eslint-config-airbnb-base": "^11.1.1",
+    "eslint-config-prettier": "^1.5.0",
+    "eslint-plugin-import": "^2.2.0",
+    "lint-staged": "^3.3.1",
+    "pre-commit": "^1.2.2"
+  },
+  "lint-staged": {
+    "*.js": "eslint"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "airbnb-base",
+      "prettier"
+    ],
+    "env": {
+      "node": true
+    },
+    "rules": {
+      "linebreak-style": 0,
+      "class-methods-use-this": 0,
+      "no-console": 0
+    }
+  },
+  "pre-commit": "lint-staged",
+  "dependencies": {
+    "babel": "^6.23.0",
+    "babel-cli": "^6.23.0",
+    "babel-core": "^6.23.1",
+    "babel-preset-env": "^1.2.0",
+    "babel-preset-latest": "^6.22.0",
+    "mz": "^2.6.0"
+  },
+  "babel": {
+    "presets": [
+      [
+        "env",
+        {
+          "targets": {
+            "node": "current"
+          }
+        }
+      ]
+    ]
+  }
+}
