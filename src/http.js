@@ -2,7 +2,7 @@ import { createServer } from 'net';
 import { Readable, Writable } from 'stream';
 import EventEmitter from 'events';
 
-class MyHttpRequest extends Readable {
+export class MyHttpRequest extends Readable {
   constructor(socket) {
     super();
     this.socket = socket;
@@ -11,7 +11,8 @@ class MyHttpRequest extends Readable {
     this.socket
       .on('data', this.onData.bind(this))
       .on('error', this.onError.bind(this))
-      .on('end', this.onEnd.bind(this));
+      .on('end', this.onEnd.bind(this))
+      .on('close', this.onClose.bind(this));
   }
   _read() {
     this.socket.resume();
@@ -39,10 +40,17 @@ class MyHttpRequest extends Readable {
     }
   }
   onError(err) {
+    console.log('Error');
     this.emit('error', err);
   }
   onEnd() {
+    this.removeAllListeners('data');
+    this.removeAllListeners('end');
     this.push(null);
+  }
+  onClose() {
+    this.push(null);
+    this.emit('close');
   }
   findDelimiter(buffer) {
     return buffer.indexOf(`\r\n\r\n`);
@@ -69,11 +77,12 @@ class MyHttpRequest extends Readable {
   }
 }
 
-class MyHttpResponse extends Writable {
+export class MyHttpResponse extends Writable {
   constructor(socket) {
     super();
     this.socket = socket;
     this.isHeadersSent = false;
+    this.statusCodeSent = false;
     this.headers = new Map([]);
     this.commonStatusCode = new Map([
       [200, 'OK'],
@@ -91,6 +100,9 @@ class MyHttpResponse extends Writable {
   }
   end() {
     this.socket.end();
+  }
+  onError(err) {
+    this.emit('error', err);
   }
   setHeader(headerName, value) {
     if (this.isHeadersSent) {
@@ -112,11 +124,16 @@ class MyHttpResponse extends Writable {
     this.isHeadersSent = true;
   }
   writeHead(statusCode) {
-    this.statusCode = statusCode;
+    if (!this.statusCodeSent) {
+      this.statusCode = statusCode;
+      this.statusCodeSent = true;
+    } else {
+      this.emit('error');
+    }
   }
 }
 
-class MyHttpServer extends EventEmitter {
+export class MyHttpServer extends EventEmitter {
   constructor() {
     super();
     this.server = createServer();
