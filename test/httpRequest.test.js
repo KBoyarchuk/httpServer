@@ -157,8 +157,8 @@ test.cb(`HttpRequest should emit close event if socket was closed`, t => {
   socket.emit('close');
 });
 
-test.only(`Call to HttpServer listen should start server on corresponding port`, t => {
-  const port = 4000;
+test(`Call to HttpServer listen should start server on corresponding port`, t => {
+  const port = 3000;
   const foo = proxyquire('../src/http', {
     net: {
       createServer() {
@@ -172,10 +172,8 @@ test.only(`Call to HttpServer listen should start server on corresponding port`,
     },
   });
 
-  console.log(foo);
   const server = foo.default.createServer();
   server.listen(port);
-  t.pass();
 });
 
 test.cb(`HttpResponse should be WritableStream`, t => {
@@ -184,5 +182,37 @@ test.cb(`HttpResponse should be WritableStream`, t => {
   });
   const myStream = new MyHttpResponse(fakeSocket);
   t.true(myStream instanceof Writable);
+  t.end();
+});
+
+test.cb(`HttpResponse should handle errors on socket`, t => {
+  const fakeSocket = new Writable({
+    write: () => {},
+  });
+  const res = new MyHttpResponse(fakeSocket);
+  const spy = sinon.spy(res, 'onError');
+  fakeSocket.emit('error');
+  setTimeout(
+    () => {
+      sinon.assert.called(spy);
+    },
+    500,
+  );
+  t.end();
+});
+
+test.cb(`HttpRequest should handle errors on socket`, t => {
+  const fakeSocket = new Readable({
+    read: () => {},
+  });
+  const req = new MyHttpRequest(fakeSocket);
+  const spy = sinon.spy(req, 'onError');
+  fakeSocket.emit('error');
+  setTimeout(
+    () => {
+      sinon.assert.called(spy);
+    },
+    500,
+  );
   t.end();
 });
