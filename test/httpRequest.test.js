@@ -157,10 +157,25 @@ test.cb(`HttpRequest should emit close event if socket was closed`, t => {
   socket.emit('close');
 });
 
-test.cb(`Call to HttpServer listen should start server on corresponding port`, t => {
-  const foo = proxyquire('D:/Node/src/http', { path: {} });
-  foo.default.createServer().listen(3000);
-  t.end();
+test.only(`Call to HttpServer listen should start server on corresponding port`, t => {
+  const port = 4000;
+  const foo = proxyquire('../src/http', {
+    net: {
+      createServer() {
+        return {
+          on() {},
+          listen(serverPort) {
+            t.is(serverPort, 3000);
+          },
+        };
+      },
+    },
+  });
+
+  console.log(foo);
+  const server = foo.default.createServer();
+  server.listen(port);
+  t.pass();
 });
 
 test.cb(`HttpResponse should be WritableStream`, t => {
