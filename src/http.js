@@ -39,9 +39,8 @@ export class MyHttpRequest extends Readable {
       this.socket.pause();
     }
   }
-  onError(err) {
-    console.log('Error');
-    this.emit('error', err);
+  onError() {
+    console.error('Socket Error');
   }
   onEnd() {
     this.removeAllListeners('data');
@@ -90,6 +89,7 @@ export class MyHttpResponse extends Writable {
       [404, 'Not Found'],
       [500, 'Internal Server Error'],
     ]);
+    this.socket.on('error', this.onError.bind(this));
   }
   _write(chunk, encoding, cb) {
     if (!this.isHeadersSent) {
@@ -101,8 +101,8 @@ export class MyHttpResponse extends Writable {
   end() {
     this.socket.end();
   }
-  onError(err) {
-    this.emit('error', err);
+  onError() {
+    console.error('Socket Error');
   }
   setHeader(headerName, value) {
     if (this.isHeadersSent) {
