@@ -178,7 +178,7 @@ test(`Call to HttpServer listen should start server on corresponding port`, t =>
 
 test.cb(`HttpResponse should be WritableStream`, t => {
   const fakeSocket = new Writable({
-    read: () => {},
+    write: () => {},
   });
   const myStream = new MyHttpResponse(fakeSocket);
   t.true(myStream instanceof Writable);
